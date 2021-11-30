@@ -36,9 +36,9 @@ func (r *route) addRoute(method string, pattern string, handler []HandlerFunc) {
 
 // 获取路由，并且返回所有动态参数。例如
 // 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}，/static/css/h.css匹配到/static/*filepath，解析结果为{filepath: "css/h.css"}。
-func (r *route) getRoute(method string, path string) (*node, map[string]string) {
+func (r *route) getRoute(method string, path string) (*node, []Param) {
 	searchParts := parsePattern(path)
-	params := make(map[string]string)
+	var params []Param
 	root, ok := r.roots[method]
 	if !ok {
 		return nil, nil
@@ -49,10 +49,10 @@ func (r *route) getRoute(method string, path string) (*node, map[string]string) 
 		parts := parsePattern(n.pattern)
 		for index, part := range parts {
 			if part[0] == ':' {
-				params[part[1:]] = searchParts[index]
+				params = append(params, Param{part[1:], searchParts[index]})
 			}
 			if part[0] == '*' && len(part) > 1 {
-				params[part[1:]] = strings.Join(searchParts[index:], "/")
+				params = append(params, Param{part[1:], strings.Join(searchParts[index:], "/")})
 				break
 			}
 		}
