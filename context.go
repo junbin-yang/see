@@ -37,6 +37,29 @@ func (thisMap H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
+type Param struct {
+	Key   string
+	Value string
+}
+
+type Params []Param
+
+func (this Params) Get(key string) string {
+	for _, param := range this {
+		if param.Key == key {
+			return param.Value
+		}
+	}
+	return ""
+}
+func (this Params) GetMapByOneKey() map[string]string {
+	out := map[string]string{}
+	for _, param := range this {
+		out[param.Key] = param.Value
+	}
+	return out
+}
+
 // 请求上下文信息
 type Context struct {
 	// 请求信息
@@ -44,7 +67,7 @@ type Context struct {
 	RequestURI string
 	Method     string
 	RemoteAddr string
-	Params     map[string]string
+	Params     Params
 	// 响应信息
 	StatusCode int
 	// 中间件
@@ -94,13 +117,12 @@ func (c *Context) GetHeader(key string) string {
 //      id := c.Param("id") // id == "john"
 // })
 func (c *Context) Param(key string) string {
-	value, _ := c.Params[key]
-	return value
+	return c.Params.Get(key)
 }
 
-// 添加上下文参数（并发场景是线程不安全的）
+// 添加上下文参数
 func (c *Context) AddParam(key, value string) {
-	c.Params[key] = value
+	c.Params = append(c.Params, Param{key, Value})
 }
 
 // 获取Url上的参数,?x=y
@@ -620,7 +642,7 @@ func (c *Context) BindUri(obj interface{}, validationfunc ...map[string]validato
 }
 
 func (c *Context) ShouldBindUri(obj interface{}, validationfunc ...map[string]validator.Func) error {
-	str, err := json.ObjectToJson(c.Params)
+	str, err := json.ObjectToJson(c.Params.GetMapByOneKey())
 	if err != nil {
 		return err
 	}
