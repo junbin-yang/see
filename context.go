@@ -122,7 +122,7 @@ func (c *Context) Param(key string) string {
 
 // 添加上下文参数
 func (c *Context) AddParam(key, value string) {
-	c.Params = append(c.Params, Param{key, Value})
+	c.Params = append(c.Params, Param{key, value})
 }
 
 // 获取Url上的参数,?x=y
