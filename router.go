@@ -40,12 +40,10 @@ func (r *route) addRoute(method string, pattern string, handler []HandlerFunc) {
 
 // 获取路由，并且返回所有动态参数。例如
 // 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}，/static/css/h.css匹配到/static/*filepath，解析结果为{filepath: "css/h.css"}。
-func (r *route) getRoute(method string, path string) (*node, []Param) {
-	arrid, _ := anyMethods.GetKey(method)
-
+func (r *route) getRoute(mid int32, path string) (*node, []Param) {
 	searchParts := parsePattern(path)
 	var params []Param
-	root := r.roots[arrid]
+	root := r.roots[mid]
 	if root == nil {
 		return nil, nil
 	}
@@ -69,7 +67,7 @@ func (r *route) getRoute(method string, path string) (*node, []Param) {
 
 // 找到并执行处理请求函数
 func (r *route) handle(c *Context) {
-	n, params := r.getRoute(c.Method, c.Path)
+	n, params := r.getRoute(c.methodId, c.Path)
 	if n != nil {
 		// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
 		c.Params = params
