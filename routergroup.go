@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+var anyMethods array = []string{
+	http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
+	http.MethodHead, http.MethodOptions, http.MethodDelete, http.MethodConnect,
+	http.MethodTrace,
+}
+
 type routerGroup struct {
 	prefix      string        // 路由分组Url
 	middlewares []HandlerFunc // 中间件
@@ -33,11 +39,6 @@ func (this *routerGroup) Use(middlewares ...HandlerFunc) {
 func (this *routerGroup) addRoute(method string, pattern string, handler []HandlerFunc) {
 	printRoute(method, this.prefix+pattern, handler[len(handler)-1])
 	if method == "Any" {
-		anyMethods := []string{
-			http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
-			http.MethodHead, http.MethodOptions, http.MethodDelete, http.MethodConnect,
-			http.MethodTrace,
-		}
 		for _, method = range anyMethods {
 			this.engine.router.addRoute(method, this.prefix+pattern, handler)
 		}
