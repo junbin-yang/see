@@ -79,13 +79,10 @@ type Context struct {
 	Req    *http.Request
 	Writer http.ResponseWriter
 	engine *Engine
-
-	methodId int32
 }
 
 // 初始化上下文实例
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
-	methodId, _ := anyMethods.GetKey(r.Method)
 	return &Context{
 		Req:        r,
 		Writer:     w,
@@ -94,7 +91,6 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		Method:     r.Method,
 		RemoteAddr: r.RemoteAddr,
 		index:      -1,
-		methodId:   methodId,
 	}
 }
 

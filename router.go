@@ -7,7 +7,7 @@ import (
 
 type route struct {
 	// 存储每种请求方式的树根节点
-	roots []*node
+	roots map[string]*node
 	// [请求方法-请求路径]处理请求的函数([]HandlerFunc最后一个才是实际处理函数，前面部分均为中间件)
 	handlers map[string][]HandlerFunc
 
@@ -17,7 +17,7 @@ type route struct {
 // 初始化路由
 func newRoute() *route {
 	return &route{
-		roots:    make([]*node, len(anyMethods)),
+		roots:    make(map[string]*node),
 		handlers: make(map[string][]HandlerFunc),
 	}
 }
@@ -26,24 +26,20 @@ func newRoute() *route {
 func (r *route) addRoute(method string, pattern string, handler []HandlerFunc) {
 	parts := parsePattern(pattern)
 	key := method + "-" + pattern
-	arrid, status := anyMethods.GetKey(method)
-	if status == false {
-		panic("Error registering route method")
+	if _, ok := r.roots[method]; !ok {
+		r.roots[method] = &node{}
 	}
-	if r.roots[arrid] == nil {
-		r.roots[arrid] = &node{}
-	}
-	r.roots[arrid].insert(pattern, parts, 0)
+	r.roots[method].insert(pattern, parts, 0)
 
 	r.handlers[key] = handler
 }
 
 // 获取路由，并且返回所有动态参数。例如
 // 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}，/static/css/h.css匹配到/static/*filepath，解析结果为{filepath: "css/h.css"}。
-func (r *route) getRoute(mid int32, path string) (*node, []Param) {
+func (r *route) getRoute(method string, path string) (*node, []Param) {
 	searchParts := parsePattern(path)
 	var params []Param
-	root := r.roots[mid]
+	root := r.roots[method]
 	if root == nil {
 		return nil, nil
 	}
@@ -67,7 +63,7 @@ func (r *route) getRoute(mid int32, path string) (*node, []Param) {
 
 // 找到并执行处理请求函数
 func (r *route) handle(c *Context) {
-	n, params := r.getRoute(c.methodId, c.Path)
+	n, params := r.getRoute(c.Method, c.Path)
 	if n != nil {
 		// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
 		c.Params = params

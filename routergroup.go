@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var anyMethods array = []string{
+var anyMethods []string = []string{
 	http.MethodConnect, http.MethodDelete, http.MethodGet,
 	http.MethodHead, http.MethodOptions, http.MethodPatch,
 	http.MethodPost, http.MethodPut, http.MethodTrace,

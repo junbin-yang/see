@@ -1,24 +1,8 @@
 package see
 
 import (
-	"github.com/openacid/slim/encode"
-	"github.com/openacid/slim/trie"
 	"strings"
 )
-
-// 需要sort.Strings(array)排序
-type array []string
-
-func (a array) GetKey(value string) (int32, bool) {
-	l := len(a)
-	data := make([]int32, l)
-	for i := int32(0); i < int32(l); i++ {
-		data[i] = i
-	}
-	codec := encode.I32{}
-	st, _ := trie.NewSlimTrie(codec, a, data)
-	return st.GetI32(value)
-}
 
 // 前缀树实现
 type node struct {
