@@ -6,9 +6,10 @@ import (
 	"strings"
 )
 
+// 需要sort.Strings(array)排序
 type array []string
 
-func (a *array) GetKey(value string) (int32, bool) {
+func (a array) GetKey(value string) (int32, bool) {
 	l := len(a)
 	data := make([]int32, l)
 	for i := int32(0); i < int32(l); i++ {

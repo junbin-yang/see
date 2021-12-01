@@ -45,8 +45,8 @@ func (r *route) getRoute(method string, path string) (*node, []Param) {
 
 	searchParts := parsePattern(path)
 	var params []Param
-	root, ok := r.roots[arrid]
-	if !ok {
+	root := r.roots[arrid]
+	if root == nil {
 		return nil, nil
 	}
 
