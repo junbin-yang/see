@@ -26,10 +26,8 @@ func newRoute() *route {
 func (r *route) addRoute(method string, pattern string, handler []HandlerFunc) {
 	parts := parsePattern(pattern)
 	if _, ok := r.roots[method]; !ok {
-		//r.roots[method] = &node{}
 		r.roots[method] = &node{children: make(map[string]*node)}
 	}
-	//r.roots[method].insert(pattern, parts, 0)
 	r.roots[method].insert(pattern, parts)
 
 	key := method + "-" + pattern
@@ -40,7 +38,6 @@ func (r *route) addRoute(method string, pattern string, handler []HandlerFunc) {
 // 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}，/static/css/h.css匹配到/static/*filepath，解析结果为{filepath: "css/h.css"}。
 func (r *route) getRoute(method string, path string) (*node, []Param) {
 	searchParts := parsePattern(path)
-	// var params []Param
 	root := r.roots[method]
 	if root == nil {
 		return nil, nil
@@ -48,23 +45,6 @@ func (r *route) getRoute(method string, path string) (*node, []Param) {
 
 	// 在该方法的路由树上查找该路径
 	return root.search(searchParts)
-	/*
-		n := root.search(searchParts, 0)
-		if n != nil {
-			parts := parsePattern(n.pattern)
-			for index, part := range parts {
-				if part[0] == ':' {
-					params = append(params, Param{part[1:], searchParts[index]})
-				}
-				if part[0] == '*' && len(part) > 1 {
-					params = append(params, Param{part[1:], strings.Join(searchParts[index:], "/")})
-					break
-				}
-			}
-			return n, params
-		}
-		return nil, nil
-	*/
 }
 
 // 找到并执行处理请求函数
