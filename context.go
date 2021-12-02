@@ -82,16 +82,17 @@ type Context struct {
 }
 
 // 初始化上下文实例
-func NewContext(w http.ResponseWriter, r *http.Request) *Context {
-	return &Context{
-		Req:        r,
-		Writer:     w,
-		Path:       r.URL.Path,
-		RequestURI: r.RequestURI,
-		Method:     r.Method,
-		RemoteAddr: r.RemoteAddr,
-		index:      -1,
-	}
+func (c *Context) SetContext(w http.ResponseWriter, r *http.Request) {
+	c.Req = r
+	c.Writer = w
+	c.Path = r.URL.Path
+	c.RequestURI = r.RequestURI
+	c.Method = r.Method
+	c.RemoteAddr = r.RemoteAddr
+}
+
+func (c *Context) Reset() {
+	c.index = -1
 }
 
 func (c *Context) CopyRawData() ([]byte, error) {

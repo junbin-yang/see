@@ -3,6 +3,7 @@ package see
 import (
 	"net/http"
 	"strings"
+	"sync"
 )
 
 const defaultMultipartMemory = 32 << 20 // 32 MB
@@ -40,6 +41,8 @@ type Engine struct {
 
 	// Value of 'maxMemory' param that is given to http.Request's ParseMultipartForm method call.
 	MaxMultipartMemory int64
+	// context的临时对象池
+	pool sync.Pool
 }
 
 func New() *Engine {
@@ -47,6 +50,9 @@ func New() *Engine {
 	engine.routerGroup = &routerGroup{engine: engine}
 	engine.groups = []*routerGroup{engine.routerGroup}
 	engine.MaxMultipartMemory = defaultMultipartMemory
+	engine.pool.New = func() interface{} {
+		return &Context{index: -1}
+	}
 	return engine
 }
 
@@ -78,10 +84,16 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	c := NewContext(w, r)
+	// 取一个临时Context对象
+	c := this.pool.Get().(*Context)
+	c.SetContext(w, r)
 	c.handlers = middlewares
 	c.engine = this
 	this.router.handle(c)
+
+	// 重置标记后放回对象池
+	c.Reset()
+	this.pool.Put(c)
 }
 
 // 找不到路由时的回调
