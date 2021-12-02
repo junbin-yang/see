@@ -6,10 +6,11 @@ import (
 
 // 前缀树实现
 type node struct {
-	pattern  string  // 是否一个完整的url，不是则为空字符串
-	part     string  // URL块值，用/分割的部分，比如/abc/123，abc和123就是2个part
-	children []*node // 节点下的子节点
-	isWild   bool    // 是否模糊匹配，比如:id*id这样的node就为true
+	pattern string // 是否一个完整的url，不是则为空字符串
+	part    string // URL块值，用/分割的部分，比如/abc/123，abc和123就是2个part
+	//children []*node // 节点下的子节点
+	children map[string]*node // 节点下的子节点
+	isWild   bool             // 是否模糊匹配，比如:id*id这样的node就为true
 }
 
 /*
@@ -21,6 +22,23 @@ type node struct {
  * 查询功能，同样也是递归查询每一层的节点，退出规则是，匹配到了*、匹配失败、或者匹配到了第len(parts)层节点。
  */
 
+func (n *node) insert(pattern string, parts []string) {
+	this := n
+	for _, part := range parts {
+		// 没有匹配上，那就初始化一个，放到n节点的子列表中
+		if this.children[part] == nil {
+			this.children[part] = &node{
+				part:     part,
+				children: make(map[string]*node),
+				isWild:   part[0] == ':' || part[0] == '*',
+			}
+		}
+		this = this.children[part]
+	}
+	this.pattern = pattern
+}
+
+/*
 func (n *node) insert(pattern string, parts []string, height int) {
 	if len(parts) == height {
 		// 如果已经匹配完了，那么将pattern赋值给该node，表示它是一个完整的url
@@ -39,6 +57,7 @@ func (n *node) insert(pattern string, parts []string, height int) {
 	// 接着插入下一个part节点
 	child.insert(pattern, parts, height+1)
 }
+
 
 func (n *node) search(parts []string, height int) *node {
 	if len(parts) == height || strings.HasPrefix(n.part, "*") {
@@ -65,7 +84,36 @@ func (n *node) search(parts []string, height int) *node {
 
 	return nil
 }
+*/
 
+func (n *node) search(parts []string) (*node, []Param) {
+	var params []Param
+	this := n
+	for i, part := range parts {
+		var temp string
+		// child是否等于part
+		for _, child := range this.children {
+			// 处理当前节点参数
+			if child.part == part || child.isWild {
+				if child.part[0] == ':' {
+					params = append(params, Param{child.part[1:], part})
+				}
+				if child.part[0] == '*' {
+					params = append(params, Param{child.part[1:], strings.Join(parts[i:], "/")})
+				}
+				temp = child.part
+			}
+		}
+		// 遇到通配符*，直接返回
+		//if temp[0] == '*' {
+		//    return this.children[temp], params
+		//}
+		this = this.children[temp]
+	}
+	return this, params
+}
+
+/*
 // 查找匹配的子节点，场景是用在插入时使用，找到1个匹配的就立即返回
 func (n *node) matchChild(part string) *node {
 	// 遍历n节点的所有子节点
@@ -86,6 +134,7 @@ func (n *node) matchChild(part string) *node {
 	return nil
 }
 
+
 // 查找所有匹配成功的节点
 func (n *node) matchChildren(part string) []*node {
 	nodes := make([]*node, 0)
@@ -101,3 +150,4 @@ func (n *node) matchChildren(part string) []*node {
 	nodes = append(nodes, wildNodes...)
 	return nodes
 }
+*/
