@@ -603,7 +603,7 @@ $ curl -v localhost:8088/thinkerou/not-uuid
 func main() {
 	r := see.Default()
 
-	r.GET("/someJSON", func(c *gin.Context) {
+	r.GET("/someJSON", func(c *see.Context) {
 		c.JSON(http.StatusOK, see.H{"message": "hey", "status": http.StatusOK})
 	})
 
@@ -895,7 +895,7 @@ func main() {
 2021-11-30 10:13:09,514 Register Route: GET /json
 ```
 
-如果你想以给定的格式记录这些信息（例如 JSON，键值对或其他格式），你可以使用`gin.DebugPrintRouteFunc`来定义格式，在下面的示例中，我们使用标准日志包记录路由日志，你可以使用其他适合你需求的日志工具
+如果你想以给定的格式记录这些信息（例如 JSON，键值对或其他格式），你可以使用`see.DebugPrintRouteFunc`来定义格式，在下面的示例中，我们使用标准日志包记录路由日志，你可以使用其他适合你需求的日志工具
 
 ```
 func main() {
