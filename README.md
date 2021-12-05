@@ -12,8 +12,6 @@ see是参考gin开发的高性能轻量级web框架。本来只是一个练手�
 # 新特性
 🚩 访问日志，类似nginx的access.log，支持rotate和过期自动删除。
 
-🚩 当动态路由与静态路由冲突时，gin的处理方式是直接抛出异常，这里改成静态路由优先。
-
 🚩 更直接的自定义参数验证器，在数据绑定时传入作为可选参数传入即可。
 
 🚩 新增CopyRawData()方法支持*http.Request读出后重新写入。
@@ -71,8 +69,7 @@ func main() {
 		c.String(http.StatusOK, "Hello %s", name)
 	})
 	
-	//路由覆盖问题，静态路由优先
-	router.GET("/user/zhangsan", func(c *see.Context) {
+	router.GET("/user/name/zhangsan", func(c *see.Context) {
 		c.String(http.StatusOK, "ok")
 	})
 
