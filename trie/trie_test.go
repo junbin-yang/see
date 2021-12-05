@@ -2,7 +2,13 @@ package trie
 
 import (
 	"testing"
+	"unsafe"
 )
+
+type Param2 struct {
+	Key   string
+	Value string
+}
 
 func TestTrie(t *testing.T) {
 	tree := NewTree()
@@ -33,6 +39,7 @@ func TestTrie(t *testing.T) {
 		"/",
 	}
 	for _, i := range url {
-		t.Log(tree.Search(i))
+		a, b := tree.Search(i)
+		t.Log(a, *(*[]Param2)(unsafe.Pointer(&b)))
 	}
 }

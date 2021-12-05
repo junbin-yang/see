@@ -3,7 +3,8 @@ package see
 import (
 	"github.com/junbin-yang/see/trie"
 	"net/http"
-	"strings"
+	"unsafe"
+	//"strings"
 )
 
 type route struct {
@@ -37,7 +38,7 @@ func (r *route) addRoute(method string, pattern string, handler []HandlerFunc) {
 
 // 获取路由，并且返回所有动态参数。例如
 // 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}，/static/css/h.css匹配到/static/*filepath，解析结果为{filepath: "css/h.css"}。
-func (r *route) getRoute(method string, path string) (string, []Param) {
+func (r *route) getRoute(method string, path string) (string, []trie.Param) {
 	root := r.roots[method]
 	if root == nil {
 		return "", nil
@@ -52,7 +53,7 @@ func (r *route) handle(c *Context) {
 	fullPath, params := r.getRoute(c.Method, c.Path)
 	if fullPath != "" {
 		// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
-		c.Params = params
+		c.Params = *(*[]Param)(unsafe.Pointer(&params))
 		key := c.Method + "-" + fullPath
 		c.handlers = append(c.handlers, r.handlers[key]...)
 	} else {
