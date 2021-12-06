@@ -16,7 +16,7 @@ func min(a, b int) int {
 	return b
 }
 
-func countParams(path string) uint8 {
+func CountParams(path string) uint8 {
 	var n uint
 	for i := 0; i < len(path); i++ {
 		if path[i] != ':' && path[i] != '*' {
@@ -80,7 +80,7 @@ func (n *Node) incrementChildPrio(pos int) int {
 func (n *Node) Insert(path string) {
 	fullPath := path
 	n.priority++
-	numParams := countParams(path)
+	numParams := CountParams(path)
 
 	// non-empty tree
 	if len(n.path) > 0 || len(n.children) > 0 {

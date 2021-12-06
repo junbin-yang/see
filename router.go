@@ -45,7 +45,7 @@ func (r *route) getRoute(method string, path string) (string, []trie.Param) {
 	}
 
 	// 在该方法的路由树上查找该路径
-	params := make([]trie.Param, 0)
+	params := make([]trie.Param, 0, trie.CountParams(path))
 	fullpath := root.Search(path, &params)
 	return fullpath, params
 }
