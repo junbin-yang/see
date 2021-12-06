@@ -24,7 +24,7 @@ func newRoute() *route {
 		handlers: make(map[string][]HandlerFunc),
 	}
 	r.paramsPool.New = func() interface{} {
-		params := make([]trie.Param, 0, 20)
+		params := make([]trie.Param, 0, 25)
 		return &params
 	}
 	return r
