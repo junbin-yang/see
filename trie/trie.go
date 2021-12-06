@@ -48,6 +48,10 @@ type Node struct {
 	fullPath  string
 }
 
+func NewTree() *Node {
+	return &Node{}
+}
+
 // addChild will add a child node, keeping wildcards at the end
 func (n *Node) addChild(child *Node) {
 	if n.wildChild && len(n.children) > 0 {
@@ -330,12 +334,8 @@ func (n *Node) insertChild(path string, fullPath string, isEnd bool) {
 	n.fullPath = fullPath
 }
 
-// Returns the handle registered with the given path (key). The values of
-// wildcards are saved to a map.
-// If no handle can be found, a TSR (trailing slash redirect) recommendation is
-// made if a handle exists with an extra (without the) trailing slash for the
-// given path.
-func (n *Node) Search(path string, params *[]Param, unescape bool) (fullPath string) {
+func (n *Node) Search(path string, params *[]Param) (fullPath string) {
+	var unescape = false
 	var globalParamsCount int16
 
 walk: // Outer loop for walking the tree
