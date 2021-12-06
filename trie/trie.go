@@ -375,6 +375,7 @@ func (n *Node) insertChild(path string, fullPath string, isEnd bool) {
 func (n *Node) Search(path string, params *[]Param) (fullPath string) {
 	var unescape = false
 	var globalParamsCount int16
+	*params = (*params)[:0]
 
 walk: // Outer loop for walking the tree
 	for {
