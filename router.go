@@ -13,15 +13,21 @@ type route struct {
 	// [请求方法-请求路径]处理请求的函数([]HandlerFunc最后一个才是实际处理函数，前面部分均为中间件)
 	handlers map[string][]HandlerFunc
 
-	noRoute HandlerFunc
+	noRoute    HandlerFunc
+	paramsPool sync.Pool
 }
 
 // 初始化路由
 func newRoute() *route {
-	return &route{
+	r := &route{
 		roots:    make(map[string]*trie.Node),
 		handlers: make(map[string][]HandlerFunc),
 	}
+	r.paramsPool.New = func() interface{} {
+		params := make([]trie.Param, 0, 20)
+		return &params
+	}
+	return r
 }
 
 // 注册路由
@@ -45,9 +51,10 @@ func (r *route) getRoute(method string, path string) (string, []trie.Param) {
 	}
 
 	// 在该方法的路由树上查找该路径
-	params := make([]trie.Param, 0, 20)
-	fullpath := root.Search(path, &params)
-	return fullpath, params
+	params := r.paramsPool.Get().(*[]trie.Param)
+	r.paramsPool.Put(params)
+	fullpath := root.Search(path, params)
+	return fullpath, *params
 }
 
 // 找到并执行处理请求函数
