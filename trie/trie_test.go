@@ -39,7 +39,8 @@ func TestTrie(t *testing.T) {
 		"/",
 	}
 	for _, i := range url {
-		a, b := tree.Search(i)
+		b := make([]Param, 0)
+		a := tree.Search(i, &p)
 		t.Log(a, *(*[]Param2)(unsafe.Pointer(&b)))
 	}
 }

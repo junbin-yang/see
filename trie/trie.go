@@ -314,7 +314,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string) {
 	n.path = path[offset:]
 }
 
-func (n *Node) Search(path string) (fullPath string, p []Param) {
+func (n *Node) Search(path string, params *[]Param) (fullPath string) {
 walk: // outer loop for walking the tree
 	for {
 		fullPath += n.path
@@ -347,14 +347,13 @@ walk: // outer loop for walking the tree
 					}
 
 					// save param value
-					if p == nil {
-						// lazy allocation
-						p = make([]Param, 0, n.maxParams)
+					if params != nil {
+						i := len(*params)
+						*params = (*params)[:i+1]
+						val := path[:end]
+						(*params)[i].Key = n.path[1:]
+						(*params)[i].Value = val
 					}
-					i := len(p)
-					p = p[:i+1] // expand slice within preallocated capacity
-					p[i].Key = n.path[1:]
-					p[i].Value = path[:end]
 
 					// we need to go deeper!
 					if end < len(path) {
@@ -375,14 +374,12 @@ walk: // outer loop for walking the tree
 
 				case catchAll:
 					// save param value
-					if p == nil {
-						// lazy allocation
-						p = make([]Param, 0, n.maxParams)
+					if params != nil {
+						i := len(*params)
+						*params = (*params)[:i+1]
+						(*value.params)[i].Key = n.path[2:]
+						(*value.params)[i].Value = path
 					}
-					i := len(p)
-					p = p[:i+1] // expand slice within preallocated capacity
-					p[i].Key = n.path[2:]
-					p[i].Value = path
 					return
 
 				default:
