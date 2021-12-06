@@ -64,7 +64,8 @@ func (r *route) handle(c *Context) {
 		// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
 		c.Params = *(*[]Param)(unsafe.Pointer(&params))
 		key := c.Method + "-" + fullPath
-		c.handlers = append(c.handlers, r.handlers[key]...)
+		//c.handlers = append(c.handlers, r.handlers[key]...)
+		copy(c.handlers, r.handlers[key])
 	} else {
 		// 没有匹配到路由
 		if r.noRoute == nil {
