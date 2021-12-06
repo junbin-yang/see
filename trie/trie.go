@@ -377,8 +377,8 @@ walk: // outer loop for walking the tree
 					if params != nil {
 						i := len(*params)
 						*params = (*params)[:i+1]
-						(*value.params)[i].Key = n.path[2:]
-						(*value.params)[i].Value = path
+						(*params)[i].Key = n.path[2:]
+						(*params)[i].Value = path
 					}
 					return
 
