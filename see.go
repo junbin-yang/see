@@ -104,10 +104,10 @@ func (this *Engine) NoRoute(handler HandlerFunc) {
 func (this *Engine) Run(addr ...string) (err error) {
 	switch len(addr) {
 	case 0:
-		access.Println("Using port :8080 by default")
+		//access.Println("Using port :8080 by default")
 		return http.ListenAndServe(":8080", this)
 	case 1:
-		access.Println("Using port", addr[0])
+		//access.Println("Using port", addr[0])
 		return http.ListenAndServe(addr[0], this)
 	default:
 		panic("too many parameters")
