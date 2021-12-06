@@ -51,10 +51,11 @@ func (r *route) getRoute(method string, path string) (string, []trie.Param) {
 	}
 
 	// 在该方法的路由树上查找该路径
-	params := r.paramsPool.Get().(*[]trie.Param)
-	r.paramsPool.Put(params)
-	fullpath := root.Search(path, params)
-	return fullpath, *params
+	//params := r.paramsPool.Get().(*[]trie.Param)
+	//r.paramsPool.Put(params)
+	params := make([]trie.Param, 0, 25)
+	fullpath := root.Search(path, &params)
+	return fullpath, params
 }
 
 // 找到并执行处理请求函数

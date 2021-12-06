@@ -1,10 +1,9 @@
 package trie
 
 import (
+	"github.com/junbin-yang/golib/bytesconv"
 	"net/url"
 	"strings"
-
-	"github.com/junbin-yang/golib/bytesconv"
 )
 
 // Param is a single URL parameter, consisting of a key and a value.
@@ -64,7 +63,7 @@ type Node struct {
 }
 
 func NewTree() *Node {
-	return &Node{}
+	return &Node{fullPath: "/"}
 }
 
 // addChild will add a child node, keeping wildcards at the end
@@ -381,6 +380,7 @@ walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path
 		if len(path) > len(prefix) {
+			// 有公共前缀
 			if path[:len(prefix)] == prefix {
 				path = path[len(prefix):]
 
