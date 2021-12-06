@@ -93,6 +93,7 @@ func (c *Context) SetContext(w http.ResponseWriter, r *http.Request) {
 
 func (c *Context) Reset() {
 	c.index = -1
+	c.handlers = c.handlers[:0]
 }
 
 func (c *Context) CopyRawData() ([]byte, error) {
@@ -357,7 +358,9 @@ func (c *Context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		c.handlers[c.index](c)
+		if c.handlers[c.index] != nil {
+			c.handlers[c.index](c)
+		}
 	}
 }
 
