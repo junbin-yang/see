@@ -3,8 +3,8 @@ package see
 import (
 	"github.com/junbin-yang/see/trie"
 	"net/http"
+	"sync"
 	"unsafe"
-	//"strings"
 )
 
 type route struct {
