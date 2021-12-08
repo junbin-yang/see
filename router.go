@@ -3,7 +3,6 @@ package see
 import (
 	"github.com/junbin-yang/golib/radix"
 	"net/http"
-	"sync"
 	"unsafe"
 )
 
@@ -42,7 +41,7 @@ func (r *route) getRoute(method string, path string) (HandlerFunc, radix.Params)
 	if rt == nil {
 		return nil, nil
 	}
-	return rt.Value.(HandlerFunc), *params
+	return rt.Value.(HandlerFunc), params
 }
 
 // 找到并执行处理请求函数

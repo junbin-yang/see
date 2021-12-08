@@ -46,7 +46,7 @@ func (this *routerGroup) addRoute(method string, pattern string, handler []Handl
 		engine.groups = append(
 			engine.groups,
 			&routerGroup{
-				prefix:      this.prefix + prefix, // 上一个路由分组前缀加下一个
+				prefix:      this.prefix + pattern, // 上一个路由分组前缀加下一个
 				engine:      engine,
 				private:     true,
 				middlewares: handler[:l-1],
@@ -75,7 +75,7 @@ func printRoute(httpMethod, absolutePath string, handler HandlerFunc) {
 }
 
 func (this *routerGroup) Handle(method, pattern string, handler ...HandlerFunc) {
-	this.engine.router.addRoute(method, this.prefix+pattern, handler)
+	this.addRoute(method, pattern, handler)
 }
 
 func (this *routerGroup) Any(pattern string, handler ...HandlerFunc) {
