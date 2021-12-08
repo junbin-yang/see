@@ -13,7 +13,7 @@ type root struct {
 
 type route struct {
 	// 存储每种请求方式的树根节点
-	roots   map[string]*radix.Tree
+	roots   []*radix.Tree
 	noRoute HandlerFunc
 	pool    sync.Pool
 }
@@ -21,7 +21,7 @@ type route struct {
 // 初始化路由
 func newRoute() *route {
 	r := &route{
-		roots: make(map[string]*radix.Tree),
+		roots: make([]*radix.Tree, len(anyMethods)),
 	}
 	r.pool.New = func() interface{} {
 		params := make(radix.Params, 20)
@@ -30,17 +30,47 @@ func newRoute() *route {
 	return r
 }
 
+func (r *route) getRootIndex(method string) int {
+	switch method {
+	case http.MethodConnect:
+		return 0
+	case http.MethodDelete:
+		return 1
+	case http.MethodGet:
+		return 2
+	case http.MethodHead:
+		return 3
+	case http.MethodOptions:
+		return 4
+	case http.MethodPatch:
+		return 5
+	case http.MethodPost:
+		return 6
+	case http.MethodPut:
+		return 7
+	case http.MethodTrace:
+		return 8
+	}
+	return -1
+}
+
 // 注册路由
 func (r *route) addRoute(method string, pattern string, handler HandlerFunc) {
-	if _, ok := r.roots[method]; !ok {
-		r.roots[method] = radix.PrefixRoot()
+	index := r.getRootIndex(method)
+	if index == -1 {
+		panic("The http method error")
 	}
-	r.roots[method].Insert(pattern, handler)
+	if r.roots[index] == nil {
+		r.roots[index] = radix.PrefixRoot()
+	}
+
+	r.roots[index].Insert(pattern, handler)
 }
 
 // 获取路由，并且返回所有动态参数。
 func (r *route) getRoute(method string, path string) (HandlerFunc, radix.Params, int) {
-	root := r.roots[method]
+	index := r.getRootIndex(method)
+	root := r.roots[index]
 	if root == nil {
 		return nil, nil, 0
 	}
