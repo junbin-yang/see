@@ -18,6 +18,7 @@ type routerGroup struct {
 	prefix      string        // 路由分组Url
 	middlewares []HandlerFunc // 中间件
 	engine      *Engine
+	private     bool // 单个路由私有的分组，支持单路由中间件
 }
 
 func (this *routerGroup) Group(prefix string) *routerGroup {
@@ -38,9 +39,20 @@ func (this *routerGroup) Use(middlewares ...HandlerFunc) {
 // 注册路由
 func (this *routerGroup) addRoute(method string, pattern string, handler []HandlerFunc) {
 	l := len(handler)
-	middleware := handler[:l-1]
 	lastHandler := handler[l-1]
-	this.Use(middleware...)
+	// 处理单路由中间件
+	if l > 1 {
+		engine := this.engine
+		engine.groups = append(
+			engine.groups,
+			&routerGroup{
+				prefix:      this.prefix + prefix, // 上一个路由分组前缀加下一个
+				engine:      engine,
+				private:     true,
+				middlewares: handler[:l-1],
+			},
+		)
+	}
 	printRoute(method, this.prefix+pattern, lastHandler)
 	if method == "Any" {
 		for _, method = range anyMethods {

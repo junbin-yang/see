@@ -80,7 +80,9 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var middlewares []HandlerFunc
 	for _, group := range this.groups {
 		if strings.HasPrefix(r.URL.Path, group.prefix) {
-			middlewares = append(middlewares, group.middlewares...)
+			if group.private == false || (group.private && (r.URL.Path == group.prefix)) {
+				middlewares = append(middlewares, group.middlewares...)
+			}
 		}
 	}
 
