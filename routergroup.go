@@ -37,14 +37,18 @@ func (this *routerGroup) Use(middlewares ...HandlerFunc) {
 
 // 注册路由
 func (this *routerGroup) addRoute(method string, pattern string, handler []HandlerFunc) {
-	printRoute(method, this.prefix+pattern, handler[len(handler)-1])
+	l := len(handler)
+	middleware := handler[:l-1]
+	lastHandler := handler[l-1]
+	this.Use(middleware...)
+	printRoute(method, this.prefix+pattern, lastHandler)
 	if method == "Any" {
 		for _, method = range anyMethods {
-			this.engine.router.addRoute(method, this.prefix+pattern, handler)
+			this.engine.router.addRoute(method, this.prefix+pattern, lastHandler)
 		}
 		return
 	}
-	this.engine.router.addRoute(method, this.prefix+pattern, handler)
+	this.engine.router.addRoute(method, this.prefix+pattern, lastHandler)
 }
 
 func printRoute(httpMethod, absolutePath string, handler HandlerFunc) {
