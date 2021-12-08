@@ -85,6 +85,7 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	middlewares = append(middlewares, nil)
 
 	// 取一个临时Context对象
 	c := this.pool.Get().(*Context)
