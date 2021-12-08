@@ -92,12 +92,15 @@ func (r *route) handle(c *Context) {
 	if handler != nil {
 		// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
 		c.Params = (*(*[]Param)(unsafe.Pointer(&params)))[:index]
-		for i := 0; i < index-1; i++ {
-			params[i] = radix.Param{}
-		}
-		r.pool.Put(&params)
+		defer func() {
+			for i := 0; i < index-1; i++ {
+				params[i] = radix.Param{}
+			}
+			r.pool.Put(&params)
+		}()
 
 		c.handlers[len(c.handlers)-1] = handler
+		//handler(c)
 	} else {
 		// 没有匹配到路由
 		if r.noRoute == nil {
