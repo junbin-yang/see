@@ -96,10 +96,8 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	this.router.handle(c, &paramIndex)
 
 	// 重置标记后放回对象池
-	go func() {
-		c.Reset(paramIndex)
-		this.pool.Put(c)
-	}()
+	c.Reset(paramIndex)
+	this.pool.Put(c)
 }
 
 // 找不到路由时的回调
