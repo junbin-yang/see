@@ -3,8 +3,6 @@ package see
 import (
 	"github.com/junbin-yang/golib/radix"
 	"net/http"
-	"sync"
-	"unsafe"
 )
 
 type root struct {
@@ -15,17 +13,12 @@ type route struct {
 	// 存储每种请求方式的树根节点
 	roots   []*radix.Tree
 	noRoute HandlerFunc
-	pool    sync.Pool
 }
 
 // 初始化路由
 func newRoute() *route {
 	r := &route{
 		roots: make([]*radix.Tree, len(anyMethods)),
-	}
-	r.pool.New = func() interface{} {
-		params := make(radix.Params, 20)
-		return &params
 	}
 	return r
 }
@@ -68,39 +61,29 @@ func (r *route) addRoute(method string, pattern string, handler HandlerFunc) {
 }
 
 // 获取路由，并且返回所有动态参数。
-func (r *route) getRoute(method string, path string) (HandlerFunc, radix.Params, int) {
+func (r *route) getRoute(method string, path string, params *radix.Params, paramIndex *int) HandlerFunc {
 	index := r.getRootIndex(method)
 	root := r.roots[index]
 	if root == nil {
-		return nil, nil, 0
+		return nil
 	}
 
 	// 在该方法的路由树上查找该路径
-	params := r.pool.Get().(*radix.Params)
-	paramIndex := 0
-	rt := root.Search(path, params, &paramIndex)
+	// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
+	rt := root.Search(path, params, paramIndex)
 	if rt == nil {
-		return nil, nil, 0
+		return nil
 	}
 
-	return rt.Value.(HandlerFunc), *params, paramIndex
+	return rt.Value.(HandlerFunc)
 }
 
 // 找到并执行处理请求函数
-func (r *route) handle(c *Context) {
-	handler, params, index := r.getRoute(c.Method, c.Path)
+func (r *route) handle(c *Context, paramIndex *int) {
+	handler := r.getRoute(c.Method, c.Path, &c.Params, paramIndex)
 	if handler != nil {
-		// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
-		c.Params = (*(*[]Param)(unsafe.Pointer(&params)))[:index]
-		defer func() {
-			for i := 0; i < index-1; i++ {
-				params[i] = radix.Param{}
-			}
-			r.pool.Put(&params)
-		}()
-
-		c.handlers[len(c.handlers)-1] = handler
-		//handler(c)
+		//c.handlers = append(c.handlers, handler)
+		c.lastHandler = handler
 	} else {
 		// 没有匹配到路由
 		if r.noRoute == nil {

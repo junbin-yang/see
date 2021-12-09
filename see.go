@@ -1,6 +1,7 @@
 package see
 
 import (
+	"github.com/junbin-yang/golib/radix"
 	"net/http"
 	"strings"
 	"sync"
@@ -51,7 +52,7 @@ func New() *Engine {
 	engine.groups = []*routerGroup{engine.routerGroup}
 	engine.MaxMultipartMemory = defaultMultipartMemory
 	engine.pool.New = func() interface{} {
-		return &Context{index: -1}
+		return &Context{index: -1, Params: make(radix.Params, 20)}
 	}
 	return engine
 }
@@ -85,18 +86,20 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	middlewares = append(middlewares, nil)
 
 	// 取一个临时Context对象
 	c := this.pool.Get().(*Context)
 	c.SetContext(w, r)
 	c.handlers = middlewares
 	c.engine = this
-	this.router.handle(c)
+	paramIndex := 0
+	this.router.handle(c, &paramIndex)
 
 	// 重置标记后放回对象池
-	c.Reset()
-	this.pool.Put(c)
+	go func() {
+		c.Reset(paramIndex)
+		this.pool.Put(c)
+	}()
 }
 
 // 找不到路由时的回调

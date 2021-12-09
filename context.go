@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/junbin-yang/golib/bytesconv"
 	"github.com/junbin-yang/golib/json"
+	"github.com/junbin-yang/golib/radix"
 	"github.com/junbin-yang/see/verify"
 	"gopkg.in/yaml.v2"
 	"io"
@@ -37,29 +38,6 @@ func (thisMap H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
-type Param struct {
-	Key   string
-	Value string
-}
-
-type Params []Param
-
-func (this Params) Get(key string) string {
-	for _, param := range this {
-		if param.Key == key {
-			return param.Value
-		}
-	}
-	return ""
-}
-func (this Params) GetMapByOneKey() map[string]string {
-	out := map[string]string{}
-	for _, param := range this {
-		out[param.Key] = param.Value
-	}
-	return out
-}
-
 // 请求上下文信息
 type Context struct {
 	// 请求信息
@@ -67,12 +45,13 @@ type Context struct {
 	RequestURI string
 	Method     string
 	RemoteAddr string
-	Params     Params
+	Params     radix.Params
 	// 响应信息
 	StatusCode int
 	// 中间件
-	handlers []HandlerFunc
-	index    int
+	handlers    []HandlerFunc
+	lastHandler HandlerFunc
+	index       int
 	// 处理过程中设置在上下文中的数据
 	Keys sync.Map
 
@@ -91,9 +70,18 @@ func (c *Context) SetContext(w http.ResponseWriter, r *http.Request) {
 	c.RemoteAddr = r.RemoteAddr
 }
 
-func (c *Context) Reset() {
+func (c *Context) Reset(index int) {
 	c.index = -1
 	c.handlers = c.handlers[:0]
+	c.lastHandler = nil
+	c.StatusCode = 0
+	for i := 0; i < index; i++ {
+		c.Params[i] = radix.Param{}
+	}
+	c.Keys.Range(func(k, v interface{}) bool {
+		c.Keys.Delete(k)
+		return true
+	})
 }
 
 func (c *Context) CopyRawData() ([]byte, error) {
@@ -119,12 +107,12 @@ func (c *Context) GetHeader(key string) string {
 //      id := c.Param("id") // id == "john"
 // })
 func (c *Context) Param(key string) string {
-	return c.Params.Get(key)
+	return c.Params.ByName(key)
 }
 
 // 添加上下文参数
 func (c *Context) AddParam(key, value string) {
-	c.Params = append(c.Params, Param{key, value})
+	c.Params = append(c.Params, radix.Param{key, value})
 }
 
 // 获取Url上的参数,?x=y
@@ -361,6 +349,9 @@ func (c *Context) Next() {
 		if c.handlers[c.index] != nil {
 			c.handlers[c.index](c)
 		}
+	}
+	if c.index == s && c.lastHandler != nil {
+		c.lastHandler(c)
 	}
 }
 
@@ -646,7 +637,7 @@ func (c *Context) BindUri(obj interface{}, validationfunc ...map[string]validato
 }
 
 func (c *Context) ShouldBindUri(obj interface{}, validationfunc ...map[string]validator.Func) error {
-	str, err := json.ObjectToJson(c.Params.GetMapByOneKey())
+	str, err := json.ObjectToJson(c.Params.GetMap())
 	if err != nil {
 		return err
 	}
