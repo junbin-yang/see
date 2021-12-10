@@ -110,11 +110,6 @@ func (c *Context) Param(key string) string {
 	return c.Params.ByName(key)
 }
 
-// 添加上下文参数
-func (c *Context) AddParam(key, value string) {
-	c.Params = append(c.Params, radix.Param{key, value})
-}
-
 // 获取Url上的参数,?x=y
 func (c *Context) Query(name string) string {
 	value, _ := c.GetQuery(name)
