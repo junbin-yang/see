@@ -756,7 +756,7 @@ func main() {
 
 在中间件或处理程序中启动新的Goroutines时，gin的做法是c.Copy()拷贝一个完整的上下文只读副本。see不支持Copy()函数。常用字段已经存储到上下文中，直接使用即可。
 
-多次读取Body数据的问题：gin使用GetRawData()方法读取*http.Request.Body数据，后续的处理流程里将无法通过参数绑定解析到数据。（一般是在写访问日志中间件时记录请求的数据使用），see新增CopyRawData()方法，将数据重新写入。
+多次读取Body数据的问题：gin使用GetRawData()方法读取*http.Request.Body数据，后续的处理流程里将无法通过参数绑定解析到数据。（一般是在写访问日志中间件时记录请求的数据使用），see新增CopyRawData()方法，将数据读出后重新写回上下文。
 
 ```
 func Logger() HandlerFunc {
