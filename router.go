@@ -5,10 +5,6 @@ import (
 	"net/http"
 )
 
-type root struct {
-	method string
-}
-
 type route struct {
 	// 存储每种请求方式的树根节点
 	roots   []*radix.Tree
