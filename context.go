@@ -8,7 +8,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/junbin-yang/golib/bytesconv"
 	"github.com/junbin-yang/golib/json"
-	"github.com/junbin-yang/golib/radix"
 	"github.com/junbin-yang/see/verify"
 	"gopkg.in/yaml.v2"
 	"io"
@@ -45,7 +44,7 @@ type Context struct {
 	RequestURI string
 	Method     string
 	RemoteAddr string
-	Params     radix.Params
+	Params     Params
 	// 响应信息
 	StatusCode int
 	// 中间件
@@ -70,14 +69,13 @@ func (c *Context) SetContext(w http.ResponseWriter, r *http.Request) {
 	c.RemoteAddr = r.RemoteAddr
 }
 
-func (c *Context) Reset(index int) {
+//func (c *Context) Reset(index int) {
+func (c *Context) Reset() {
 	c.index = -1
 	c.handlers = c.handlers[:0]
 	c.lastHandler = nil
 	c.StatusCode = 0
-	for i := 0; i < index; i++ {
-		c.Params[i] = radix.Param{}
-	}
+	c.Params = c.Params[:0]
 	c.Keys.Range(func(k, v interface{}) bool {
 		c.Keys.Delete(k)
 		return true

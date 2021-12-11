@@ -1,20 +1,19 @@
 package see
 
 import (
-	"github.com/junbin-yang/golib/radix"
 	"net/http"
 )
 
 type route struct {
 	// 存储每种请求方式的树根节点
-	roots   []*radix.Tree
+	roots   []*node
 	noRoute HandlerFunc
 }
 
 // 初始化路由
 func newRoute() *route {
 	r := &route{
-		roots: make([]*radix.Tree, len(anyMethods)),
+		roots: make([]*node, len(anyMethods)),
 	}
 	return r
 }
@@ -50,38 +49,25 @@ func (r *route) addRoute(method string, pattern string, handler HandlerFunc) {
 		panic("The http method error")
 	}
 	if r.roots[index] == nil {
-		r.roots[index] = radix.PrefixRoot()
+		r.roots[index] = NewTree()
 	}
 
 	r.roots[index].Insert(pattern, handler)
 }
 
 // 获取路由，并且返回所有动态参数。
-func (r *route) getRoute(method string, path string, params *radix.Params, paramIndex *int) HandlerFunc {
+//func (r *route) getRoute(method string, path string, params *radix.Params, paramIndex *int) HandlerFunc {
+func (r *route) getRoute(method string, path string, params *Params, handler *HandlerFunc) {
 	index := r.getRootIndex(method)
-	root := r.roots[index]
-	if root == nil {
-		return nil
-	}
-
-	// 在该方法的路由树上查找该路径
 	// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
-	rt := root.Search(path, params, paramIndex)
-	if rt == nil {
-		return nil
-	}
-
-	return rt.Value.(HandlerFunc)
+	r.roots[index].Search(path, params, handler)
 }
 
 // 找到并执行处理请求函数
-func (r *route) handle(c *Context, paramIndex *int) {
-	handler := r.getRoute(c.Method, c.Path, &c.Params, paramIndex)
-	if handler != nil {
-		//c.handlers = append(c.handlers, handler)
-		c.lastHandler = handler
-	} else {
-		// 没有匹配到路由
+func (r *route) handle(c *Context) {
+	r.getRoute(c.Method, c.Path, &c.Params, &c.lastHandler)
+	// 没有匹配到路由
+	if c.lastHandler == nil {
 		if r.noRoute == nil {
 			c.handlers = append(c.handlers, func(c *Context) {
 				c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)

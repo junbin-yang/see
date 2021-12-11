@@ -1,7 +1,6 @@
 package see
 
 import (
-	"github.com/junbin-yang/golib/radix"
 	"net/http"
 	"strings"
 	"sync"
@@ -52,7 +51,7 @@ func New() *Engine {
 	engine.groups = []*routerGroup{engine.routerGroup}
 	engine.MaxMultipartMemory = defaultMultipartMemory
 	engine.pool.New = func() interface{} {
-		return &Context{index: -1, Params: make(radix.Params, 20)}
+		return &Context{index: -1, Params: make(Params, 0, 20)}
 	}
 	return engine
 }
@@ -92,11 +91,10 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.SetContext(w, r)
 	c.handlers = middlewares
 	c.engine = this
-	paramIndex := 0
-	this.router.handle(c, &paramIndex)
+	this.router.handle(c)
 
 	// 重置标记后放回对象池
-	c.Reset(paramIndex)
+	c.Reset()
 	this.pool.Put(c)
 }
 
