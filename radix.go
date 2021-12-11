@@ -4,31 +4,6 @@ import (
 	"strings"
 )
 
-/*
-goos: linux
-goarch: amd64
-pkg: github.com/julienschmidt/go-http-routing-benchmark
-cpu: Intel(R) Xeon(R) CPU E5-26xx v4
-BenchmarkSee_Param        	14458629	        81.08 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_Param5       	 9103512	       136.9 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_Param20      	 3528714	       333.5 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_ParamWrite   	11000973	       114.0 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GithubStatic 	11506526	       104.5 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GithubParam  	 7349142	       156.0 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GithubAll    	   37485	     32012 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GPlusStatic  	15618726	        76.96 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GPlusParam   	11330128	       106.0 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GPlus2Params 	 9028842	       134.9 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_GPlusAll     	  777322	      1545 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_ParseStatic  	15229078	        79.23 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_ParseParam   	14144246	        85.00 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_Parse2Params 	11867996	       102.4 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_ParseAll     	  408422	      2949 ns/op	       0 B/op	       0 allocs/op
-BenchmarkSee_StaticAll    	   53185	     22596 ns/op	       0 B/op	       0 allocs/op
-PASS
-ok  	github.com/julienschmidt/go-http-routing-benchmark	22.775s
-*/
-
 type Param struct {
 	Key   string
 	Value string

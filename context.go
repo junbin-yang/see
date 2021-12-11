@@ -16,7 +16,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -37,49 +36,59 @@ func (thisMap H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
+type Key struct {
+	Key   string
+	Value interface{}
+}
+
+type Keys []Key
+
 // 请求上下文信息
 type Context struct {
 	// 请求信息
 	Path       string
-	RequestURI string
 	Method     string
-	RemoteAddr string
-	Params     Params
+	RequestURI string
+	//RemoteAddr string
+
+	// 路由参数
+	Params Params
+
 	// 响应信息
 	StatusCode int
+
 	// 中间件
-	handlers    []HandlerFunc
+	handlers []HandlerFunc
+
+	// 响应方法
 	lastHandler HandlerFunc
-	index       int
+
 	// 处理过程中设置在上下文中的数据
-	Keys sync.Map
+	Keys Keys
 
 	Req    *http.Request
 	Writer http.ResponseWriter
 	engine *Engine
+	index  int
 }
 
 // 初始化上下文实例
 func (c *Context) SetContext(w http.ResponseWriter, r *http.Request) {
-	c.Req = r
 	c.Writer = w
+	c.Req = r
 	c.Path = r.URL.Path
-	c.RequestURI = r.RequestURI
 	c.Method = r.Method
-	c.RemoteAddr = r.RemoteAddr
+	c.RequestURI = r.RequestURI
+	//c.RemoteAddr = r.RemoteAddr
 }
 
-//func (c *Context) Reset(index int) {
 func (c *Context) Reset() {
 	c.index = -1
 	c.handlers = c.handlers[:0]
 	c.lastHandler = nil
 	c.StatusCode = 0
 	c.Params = c.Params[:0]
-	c.Keys.Range(func(k, v interface{}) bool {
-		c.Keys.Delete(k)
-		return true
-	})
+	c.Keys = c.Keys[:0]
 }
 
 func (c *Context) CopyRawData() ([]byte, error) {
@@ -362,13 +371,23 @@ func (c *Context) fail(code int, err string) {
 
 // 为这个上下文存储一个新的键/值对。
 func (c *Context) Set(key string, value interface{}) {
-	c.Keys.Store(key, value)
+	for i, entry := range c.Keys {
+		if entry.Key == key {
+			c.Keys[i].Value = value
+			return
+		}
+	}
+	c.Keys = append(c.Keys, Key{key, value})
 }
 
 // 获取某个key的值，不存在返回(nil,false)
-func (c *Context) Get(key string) (value interface{}, exists bool) {
-	value, exists = c.Keys.Load(key)
-	return
+func (c *Context) Get(key string) (interface{}, bool) {
+	for _, entry := range c.Keys {
+		if entry.Key == key {
+			return entry.Value, true
+		}
+	}
+	return "", false
 }
 
 // 获取某个key的值,不存在则抛出异常

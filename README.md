@@ -7,7 +7,7 @@
 ## See
 
 # 简介
-参考gin开发的高性能轻量级web框架。作为一个练手项目。以尽量精简的代码实现，最大程度兼容和优化gin使用习惯，添加一些新特性。
+参考gin开发的高性能轻量级web框架。作为一个练手项目。以尽量精简的代码实现，最大程度兼容和优化gin使用习惯，添加一些新特性。经过不断优化，效率已略优于gin。
 
 # 新特性
 🚩 访问日志，类似nginx的access.log，支持rotate和过期自动删除。
@@ -18,10 +18,253 @@
 
 🚩 新增ShouldBindForm()和BindForm()方法，绑定form表单数据。
 
+# Benchmarks
+
+性能对比：
+
+<table>
+   <tr>
+      <td>Benchmark name</td>
+      <td>（1）</td>
+      <td>（2）</td>
+      <td>（3）</td>
+      <td>（4）</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_Param        </td>
+      <td>16790644</td>
+      <td>        70.58 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_Param        </td>
+      <td>18993596</td>
+      <td>        64.59 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_Param5       </td>
+      <td>8565904</td>
+      <td>       141.1 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_Param5       </td>
+      <td>10001650</td>
+      <td>       118.3 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_Param20      </td>
+      <td>3168889</td>
+      <td>       386.2 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_Param20      </td>
+      <td>4002708</td>
+      <td>       313.8 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_ParamWrite   </td>
+      <td>8736094</td>
+      <td>       130.0 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_ParamWrite   </td>
+      <td>12166742</td>
+      <td>       100.2 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GithubStatic </td>
+      <td>13365705</td>
+      <td>        92.69 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GithubStatic </td>
+      <td>13938786</td>
+      <td>        87.14 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GithubParam  </td>
+      <td>7792669</td>
+      <td>       153.0 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GithubParam  </td>
+      <td>8141613</td>
+      <td>       147.5 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GithubAll    </td>
+      <td>36870</td>
+      <td>     33976 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GithubAll    </td>
+      <td>42343</td>
+      <td>     28180 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GPlusStatic  </td>
+      <td>19503213</td>
+      <td>        61.31 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GPlusStatic  </td>
+      <td>18894066</td>
+      <td>        64.43 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GPlusParam   </td>
+      <td>12364990</td>
+      <td>       101.1 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GPlusParam   </td>
+      <td>12786169</td>
+      <td>        94.64 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GPlus2Params </td>
+      <td>9736572</td>
+      <td>       124.7 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GPlus2Params </td>
+      <td>9554286</td>
+      <td>       124.9 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_GPlusAll     </td>
+      <td>866647</td>
+      <td>      1489 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_GPlusAll     </td>
+      <td>929016</td>
+      <td>      1335 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_ParseStatic  </td>
+      <td>18856722</td>
+      <td>        66.26 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_ParseStatic  </td>
+      <td>17481632</td>
+      <td>        66.95 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_ParseParam   </td>
+      <td>16241710</td>
+      <td>        75.11 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_ParseParam   </td>
+      <td>17228764</td>
+      <td>        70.17 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_Parse2Params </td>
+      <td>12969364</td>
+      <td>        94.29 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_Parse2Params </td>
+      <td>12308853</td>
+      <td>        90.03 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_ParseAll     </td>
+      <td>514867</td>
+      <td>      2368 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_ParseAll     </td>
+      <td>552721</td>
+      <td>      2151 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkGin_StaticAll    </td>
+      <td>54718</td>
+      <td>     22569 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+   <tr>
+      <td>BenchmarkSee_StaticAll    </td>
+      <td>56215</td>
+      <td>     20705 ns/op</td>
+      <td>       0 B/op</td>
+      <td>       0 allocs/op</td>
+   </tr>
+</table>
+
+- (1): Total Repetitions achieved in constant time, higher means more confident result
+- (2): Single Repetition Duration (ns/op), lower is better
+- (3): Heap Memory (B/op), lower is better
+- (4): Average Allocations per Repetition (allocs/op), lower is better
+
 # 快速入门
 运行这段代码并在浏览器中访问 [http://localhost:8080](http://localhost:8080/)
 
-```javascript
+```go
 package main
 
 import "github.com/junbin-yang/see"
@@ -39,7 +282,11 @@ func main() {
 
 # 使用GET, POST, PUT等
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	// 使用默认中间件（logger and recovery）创建一个路由器
 	router := see.Default()
@@ -60,7 +307,11 @@ func main() {
 
 # 获取路径中的参数
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 	
@@ -79,7 +330,11 @@ func main() {
 
 # 获取Get参数
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 
@@ -96,7 +351,11 @@ func main() {
 
 # 获取Post参数
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 
@@ -124,7 +383,11 @@ Content-Type: application/x-www-form-urlencoded
 name=manu&message=this_is_great
 ```
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 
@@ -148,7 +411,11 @@ func main() {
 
 单文件上传
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 	// 给表单限制上传大小 (默认 32 MiB)
@@ -176,7 +443,11 @@ curl -X POST http://localhost:8080/upload \
 
 多文件上传
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 	// 给表单限制上传大小 (默认 32 MiB)
@@ -209,7 +480,11 @@ curl -X POST http://localhost:8080/upload \
 
 # 路由分组
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 
@@ -237,20 +512,20 @@ func main() {
 
 使用
 
-```
+```go
 r := see.New()
 ```
 
 代替
 
-```
+```go
 // 默认启动方式，包含 Logger、Recovery 中间件（Logger信息在stdout输出）
 r := see.Default()
 ```
 
 # 日志模式启动 🟢
 
-```
+```go
 // 传入日志文件前缀、日志保存目录、是否rotate、日志保存天数
 // 启动包含Logger、Recovery 中间件
 r := see.Enable("seeAccess", "/var/log", true, 7)
@@ -258,7 +533,11 @@ r := see.Enable("seeAccess", "/var/log", true, 7)
 
 # 使用中间件 🟢
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	// 创建一个不包含中间件的路由器
 	r := see.New()
@@ -315,7 +594,11 @@ See使用 [go-playground/validator.v10](https://github.com/go-playground/validat
 
 你还可以给字段指定特定规则的修饰符，如果一个字段用`validate:"required"`修饰，并且在绑定时该字段的值为空，那么将返回一个错误。参数验证这一部分可以直接使用validator.v10。
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 // 绑定为json
 type Login struct {
 	User     string `json:"user" xml:"user"  validate:"required"`
@@ -435,7 +718,7 @@ ltecsfield=Other.Field: 必须小于等于 struct Other 中 Field 的值；
 
 验证Passwd和Repasswd值是否相等
 
-```
+```go
 type UserReg struct {
 	Passwd 		string `json:"passwd" 	validate:"required,max=20,min=6"`
  	Repasswd 	string `json:"repasswd" validate:"required,max=20,min=6,eqfield=Passwd"`
@@ -446,7 +729,7 @@ type UserReg struct {
 
 简化了这一部分的使用方式，直接在绑定模型时传入自定义的验证方法即可。
 
-```
+```go
 package main
 
 import (
@@ -482,7 +765,11 @@ func main() {
 
 `ShouldBindQuery` 函数只绑定Get参数，不绑定post数据。
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 type Person struct {
 	Name    string `form:"name"`
 	Address string `form:"address"`
@@ -507,7 +794,11 @@ func startPage(c *see.Context) {
 
 # 绑定Get参数或者Post参数
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 type Person struct {
 	Name     string    `form:"name"`
 	Address  string    `form:"address"`
@@ -535,7 +826,11 @@ func startPage(c *see.Context) {
 
 # 绑定uri
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 type Person struct {
 	ID string `uri:"id" validate:"required,uuid"`
 	Name string `uri:"name" validate:"required"`
@@ -564,7 +859,11 @@ $ curl -v localhost:8088/thinkerou/not-uuid
 
 # 绑定Post参数 🟢
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 type LoginForm struct {
 	User     string `form:"user" validate:"required"`
 	Password string `form:"password" validate:"required"`
@@ -596,7 +895,11 @@ $ curl -v localhost:8088/thinkerou/not-uuid
 
 # 输出格式XML、JSON、YAML 🟢
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	r := see.Default()
 
@@ -621,7 +924,11 @@ func main() {
 
 使用AsciiJSON将使特殊字符编码
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	r := see.Default()
 
@@ -644,7 +951,11 @@ func main() {
 
 通常情况下，JSON会将特殊的HTML字符替换为对应的unicode字符，比如`<`替换为`\u003c`，如果想原样输出html，则使用PureJSON，这个特性在Go 1.6及以下版本中无法使用。
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	r := see.Default()
 	
@@ -671,7 +982,11 @@ func main() {
 
 访问静态文件需要先设置路径
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 	router.Static("/assets", "./assets")
@@ -682,7 +997,11 @@ func main() {
 
 # 返回第三方获取的数据
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	router := see.Default()
 	router.GET("/someDataFromReader", func(c *see.Context) {
@@ -710,7 +1029,7 @@ func main() {
 
 发布HTTP重定向很容易，支持内部和外部链接
 
-```
+```go
 r.GET("/test", func(c *see.Context) {
 	//c.Redirect(http.StatusMovedPermanently, "https://www.baidu.com/")
 	c.Redirect(http.StatusMovedPermanently, "/json")
@@ -719,7 +1038,11 @@ r.GET("/test", func(c *see.Context) {
 
 # 自定义中间件
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func Logger() see.HandlerFunc {
 	return func(c *see.Context) {
 		t := time.Now()
@@ -758,7 +1081,11 @@ func main() {
 
 多次读取Body数据的问题：gin使用GetRawData()方法读取*http.Request.Body数据，后续的处理流程里将无法通过参数绑定解析到数据。（一般是在写访问日志中间件时记录请求的数据使用），see新增CopyRawData()方法，将数据读出后重新写回上下文。
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func Logger() HandlerFunc {
 	return func(c *Context) {
 		// 开始时间
@@ -806,7 +1133,7 @@ func main() {
 
 直接像这样使用`http.ListenAndServe()`
 
-```
+```go
 func main() {
 	router := see.Default()
 	http.ListenAndServe(":8080", router)
@@ -815,7 +1142,7 @@ func main() {
 
 或者
 
-```
+```go
 func main() {
 	router := see.Default()
 
@@ -834,7 +1161,7 @@ func main() {
 
 想要优雅地重启或停止你的Web服务器，使用http.Server内置的[Shutdown()](https://golang.org/pkg/net/http/#Server.Shutdown)方法进行优雅关闭
 
-```
+```go
 package main
 
 import (
@@ -894,7 +1221,11 @@ func main() {
 
 如果你想以给定的格式记录这些信息（例如 JSON，键值对或其他格式），你可以使用`see.DebugPrintRouteFunc`来定义格式，在下面的示例中，我们使用标准日志包记录路由日志，你可以使用其他适合你需求的日志工具
 
-```
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
 func main() {
 	r := see.Default()
 	see.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string) {

@@ -36,7 +36,7 @@ func Logger() HandlerFunc {
 		// 状态码
 		statusCode := c.StatusCode
 		// 请求IP
-		clientIP := c.RemoteAddr
+		clientIP := c.Req.RemoteAddr
 		// 写入
 		access.Writer(map[string]interface{}{"userAgent": userAgent, "clientIP": clientIP, "reqMethod": reqMethod, "reqUri": reqUri, "statusCode": statusCode, "latencyTime": latencyTime, "Body": body})
 	}

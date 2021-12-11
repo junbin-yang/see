@@ -1,0 +1,22 @@
+goos: linux
+goarch: amd64
+pkg: github.com/julienschmidt/go-http-routing-benchmark
+cpu: Intel(R) Xeon(R) CPU E5-26xx v4
+BenchmarkSee_Param        	18934588	        65.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_Param5       	10113367	       121.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_Param20      	 4006928	       302.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_ParamWrite   	12420823	        99.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GithubStatic 	13799666	        89.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GithubParam  	 7790924	       165.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GithubAll    	   43060	     28338 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GPlusStatic  	18918536	        65.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GPlusParam   	12505566	        95.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GPlus2Params 	 9454593	       127.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_GPlusAll     	  946676	      1272 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_ParseStatic  	18510088	        66.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_ParseParam   	17500362	        68.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_Parse2Params 	13304650	        85.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_ParseAll     	  542652	      2289 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSee_StaticAll    	   58476	     20482 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/julienschmidt/go-http-routing-benchmark	22.634s
