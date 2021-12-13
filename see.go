@@ -1,9 +1,13 @@
 package see
 
 import (
+	"context"
+	"github.com/cloudwego/netpoll"
+	"github.com/cloudwego/netpoll-http2"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 const defaultMultipartMemory = 32 << 20 // 32 MB
@@ -124,12 +128,75 @@ func (this *Engine) NoRoute(handler HandlerFunc) {
 func (this *Engine) Run(addr ...string) (err error) {
 	switch len(addr) {
 	case 0:
-		//access.Println("Using port :8080 by default")
+		debugPrint("Using port :8080 by default")
 		return http.ListenAndServe(":8080", this)
 	case 1:
-		//access.Println("Using port", addr[0])
+		debugPrint("Using port", addr[0])
 		return http.ListenAndServe(addr[0], this)
 	default:
 		panic("too many parameters")
+	}
+}
+
+func debugPrint(o ...interface{}) {
+	if access != nil {
+		access.Println(o...)
+	}
+}
+
+func (this *Engine) RunH2s(addr ...string) {
+	var Addr string
+	switch len(addr) {
+	case 0:
+		debugPrint("Http2 using port :8080 by default")
+		Addr = ":8080"
+	case 1:
+		debugPrint("Http2 using port", addr[0])
+		Addr = addr[0]
+	default:
+		panic("too many parameters")
+	}
+
+	// 创建 listener
+	listener, err := netpoll.CreateListener("tcp", Addr)
+	if err != nil {
+		panic("create netpoll listener fail")
+	}
+
+	server := http2.Server{Handler: this}
+	// OnRequest: 是指连接上发生读事件时触发的回调
+	var onRequest netpoll.OnRequest = server.ServeConn
+
+	// options: EventLoop 初始化自定义配置项
+	opts := []netpoll.Option{
+		/*
+		 *  空闲超时,利用 TCP KeepAlive 机制来踢出死连接并减少维护开销。使用 Netpoll 时，一般不需要频繁创建和关闭连接，所以通常来说，空闲连接影响不大。
+		 *  当连接长时间处于非活动状态时，为了防止出现假死、对端挂起、异常断开等造成的死连接，在空闲超时后，主动关闭连接。
+		 */
+		netpoll.WithIdleTimeout(10 * time.Minute),
+		//初始化新链接,当接收新连接时，会自动执行注册的 OnPrepare 方法来完成准备工作
+		netpoll.WithOnPrepare(func(conn netpoll.Connection) context.Context {
+			conn.SetReadTimeout(3 * time.Minute)
+			//CloseCallback 是指连接关闭时触发的回调
+			var cb netpoll.CloseCallback = func(connection netpoll.Connection) error {
+				debugPrint("http2 client off")
+				return nil
+			}
+			conn.AddCloseCallback(cb)
+
+			return context.Background()
+		}),
+	}
+
+	// 创建 EventLoop
+	eventLoop, err := netpoll.NewEventLoop(onRequest, opts...)
+	if err != nil {
+		panic("create netpoll event-loop fail")
+	}
+
+	// 运行 Server
+	err = eventLoop.Serve(listener)
+	if err != nil {
+		panic("netpoll server exit")
 	}
 }
