@@ -18,6 +18,8 @@
 
 🚩 新增ShouldBindForm()和BindForm()方法，绑定form表单数据。
 
+🚩 基于[Netpoll](https://github.com/cloudwego/netpoll)实现HTTP2支持。
+
 # Benchmarks
 
 性能对比：
@@ -889,8 +891,7 @@ func main() {
 测试用例：
 
 ```
-$ curl -v localhost:8088/thinkerou/987fbc97-4bed-5078-9f07-9141ba07c9f3
-$ curl -v localhost:8088/thinkerou/not-uuid
+$ curl -v --form user=user --form password=password http://localhost:8080/login
 ```
 
 # 输出格式XML、JSON、YAML 🟢
@@ -1248,3 +1249,37 @@ func main() {
 	r.Run()
 }
 ```
+
+# HTTP2支持 🟢
+
+`http.Pusher`只支持Go 1.8或更高版本
+
+```go
+package main
+
+import (
+	"github.com/junbin-yang/see"
+    "net/http"
+    "log"
+)
+
+func main() {
+	r := see.Default()
+
+	r.GET("/json", func(c *see.Context) {
+		c.JSON(200, see.H{"json": "Value"})
+	})
+    
+    r.GET("/index", func(c *see.Context) {
+            if pusher, ok := c.Writer.(http.Pusher); ok {
+                if err := pusher.Push("/assets/app.js", nil); err != nil {
+                    log.Printf("Failed to push: %v", err)
+                }
+            }
+        	c.String("Test Pusher ...")
+    })
+	
+    r.RunH2s()
+}
+```
+
