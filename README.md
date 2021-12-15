@@ -20,6 +20,8 @@
 
 🚩 基于[Netpoll](https://github.com/cloudwego/netpoll)实现HTTP2支持。
 
+🚩 路由配置新增REST()方法，只需一条配置即可完成一套RESTful API注册。
+
 # Benchmarks
 
 性能对比：
@@ -305,6 +307,34 @@ func main() {
 	router.Run()
 	// router.Run(":3000") for a hard coded port
 }
+```
+
+# 使用REST 🟢
+
+```go
+package main
+
+import "github.com/junbin-yang/see"
+
+// 实现see.RESTful接口
+type UserMode struct {}		
+func (this *UserMode) Create(c *see.Context) { c.JSON(200,"RESTful POST") }
+func (this *UserMode) Query(c *see.Context) { c.JSON(200,"RESTful GET") }
+func (this *UserMode) Update(c *see.Context) { c.JSON(200,"RESTful PUT") }
+func (this *UserMode) Delete(c *see.Context) { c.JSON(200,"RESTful DELETE") }
+
+func main() {
+	router := see.Default()
+    router.REST("/user", new(UserMode))
+	router.Run()
+}
+```
+
+```
+2021-12-15 18:09:49,470 Register Route: GET /user
+2021-12-15 18:09:49,470 Register Route: POST /user
+2021-12-15 18:09:49,470 Register Route: PUT /user
+2021-12-15 18:09:49,471 Register Route: DELETE /user
 ```
 
 # 获取路径中的参数

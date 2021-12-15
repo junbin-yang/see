@@ -150,3 +150,17 @@ func (this *routerGroup) createStaticHandler(relativePath string, fs http.FileSy
 		fileServer.ServeHTTP(c.Writer, c.Req)
 	}
 }
+
+type RESTful interface {
+	Create(*Context)
+	Query(*Context)
+	Update(*Context)
+	Delete(*Context)
+}
+
+func (this *routerGroup) REST(pattern string, rt RESTful) {
+	this.GET(pattern, rt.Query)
+	this.POST(pattern, rt.Create)
+	this.PUT(pattern, rt.Update)
+	this.DELETE(pattern, rt.Delete)
+}
