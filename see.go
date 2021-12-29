@@ -138,6 +138,12 @@ func (this *Engine) Run(addr ...string) (err error) {
 	}
 }
 
+func (this *Engine) RunListener(listener net.Listener) (err error) {
+	debugPrint("Listening and serving HTTP on listener what's bind with address@%s", listener.Addr())
+	err = http.Serve(listener, this)
+	return
+}
+
 func debugPrint(o ...interface{}) {
 	if access != nil {
 		access.Println(o...)
