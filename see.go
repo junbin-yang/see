@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cloudwego/netpoll"
 	"github.com/cloudwego/netpoll-http2"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
