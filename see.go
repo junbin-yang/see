@@ -140,7 +140,7 @@ func (this *Engine) Run(addr ...string) (err error) {
 }
 
 func (this *Engine) RunListener(listener net.Listener) (err error) {
-	debugPrint("Listening and serving HTTP on listener what's bind with address@%s", listener.Addr())
+	debugPrint("Listening and serving HTTP on listener what's bind with address", listener.Addr())
 	err = http.Serve(listener, this)
 	return
 }
