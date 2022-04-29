@@ -11,7 +11,6 @@ import (
 	"github.com/junbin-yang/see/verify"
 	"gopkg.in/yaml.v2"
 	"io"
-	"math"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -567,36 +566,13 @@ func (c *Context) BindQuery(obj interface{}, validationfunc ...map[string]valida
 }
 
 func (c *Context) ShouldBindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
-	m := H{}
-	t := reflect.TypeOf(obj)
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		key := field.Tag.Get("form")
-		if len(c.initQuery()[key]) > 0 {
-			switch field.Type.Kind() {
-			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				intValue, _ := strconv.ParseInt(c.initQuery()[key][0], 10, 64)
-				m[key] = intValue
-			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				intValue, _ := strconv.ParseInt(c.initQuery()[key][0], 10, 64)
-				m[key] = uint64(math.Abs(float64(intValue)))
-			case reflect.Float32, reflect.Float64:
-				floatValue, _ := strconv.ParseFloat(c.initQuery()[key][0], 64)
-				m[key] = floatValue
-			default:
-				m[key] = c.initQuery()[key][0]
-			}
+	m := map[string]string{}
+	for key, values := range c.initQuery() {
+		if len(values) > 0 {
+			m[key] = values[0]
 		}
 	}
 
-	/*
-		m := map[string]string{}
-		for key, values := range c.initQuery() {
-			if len(values) > 0 {
-				m[key] = values[0]
-			}
-		}
-	*/
 	str, err := json.ObjectToJson(m)
 	if err != nil {
 		return err
