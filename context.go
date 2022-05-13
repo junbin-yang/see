@@ -17,6 +17,10 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/tidwall/sjson"
+	"math"
+	"reflect"
 )
 
 type H map[string]interface{}
@@ -556,29 +560,44 @@ func (c *Context) ShouldBindForm(obj interface{}, validationfunc ...map[string]v
 	return c.validate(obj, validationfunc...)
 }
 
-func (c *Context) BindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
-	if e := c.ShouldBindQuery(obj, validationfunc...); e != nil {
+func (c *Context) BindQuery(objtype interface{}, obj interface{}, validationfunc ...map[string]validator.Func) error {
+	if e := c.ShouldBindQuery(objtype, obj, validationfunc...); e != nil {
 		c.fail(400, e.Error())
 		return e
 	}
 	return nil
 }
 
-func (c *Context) ShouldBindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
-	m := map[string]string{}
-	for key, values := range c.initQuery() {
-		if len(values) > 0 {
-			m[key] = values[0]
+func (c *Context) ShouldBindQuery(objtype interface{}, obj interface{}, validationfunc ...map[string]validator.Func) error {
+	js, _ := json.ObjectToJson(c.initQuery())
+	t := reflect.TypeOf(objtype)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		key := field.Tag.Get("form")
+		if len(c.initQuery()[key]) > 0 {
+			var value interface{}
+			switch field.Type.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				value, _ = strconv.ParseInt(c.initQuery()[key][0], 10, 64)
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				value, _ = strconv.ParseInt(c.initQuery()[key][0], 10, 64)
+				value = math.Abs(float64(value.(int64)))
+			case reflect.Float32, reflect.Float64:
+				value, _ = strconv.ParseFloat(c.initQuery()[key][0], 64)
+			case reflect.Bool:
+				value = false
+				if c.initQuery()[key][0] == "true" {
+					value = true
+				}
+			default:
+				value = c.initQuery()[key][0]
+			}
+			js, _ = sjson.Set(js, key, value)
 		}
 	}
+	json.JsonToObject(js, obj, "form")
 
-	str, err := json.ObjectToJson(m)
-	if err != nil {
-		return err
-	}
-	json.JsonToObject(str, obj, "form")
 	return c.validate(obj, validationfunc...)
-
 }
 
 func (c *Context) BindYAML(obj interface{}, validationfunc ...map[string]validator.Func) error {

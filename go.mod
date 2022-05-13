@@ -14,6 +14,7 @@ require (
 	github.com/junbin-yang/golib v0.0.0-20211209104033-a4afd2214d64
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/tidwall/sjson v1.2.4
 	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0
