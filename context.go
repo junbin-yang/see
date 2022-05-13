@@ -560,17 +560,17 @@ func (c *Context) ShouldBindForm(obj interface{}, validationfunc ...map[string]v
 	return c.validate(obj, validationfunc...)
 }
 
-func (c *Context) BindQuery(objtype interface{}, obj interface{}, validationfunc ...map[string]validator.Func) error {
-	if e := c.ShouldBindQuery(objtype, obj, validationfunc...); e != nil {
+func (c *Context) BindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
+	if e := c.ShouldBindQuery(obj, validationfunc...); e != nil {
 		c.fail(400, e.Error())
 		return e
 	}
 	return nil
 }
 
-func (c *Context) ShouldBindQuery(objtype interface{}, obj interface{}, validationfunc ...map[string]validator.Func) error {
+func (c *Context) ShouldBindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
 	js, _ := json.ObjectToJson(c.initQuery())
-	t := reflect.TypeOf(objtype)
+	t := reflect.TypeOf(obj).Elem()
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		key := field.Tag.Get("form")
