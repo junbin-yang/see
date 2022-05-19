@@ -101,13 +101,24 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 找出所有路由的中间件函数
 	for _, group := range this.groups {
-		if strings.HasPrefix(r.URL.Path, group.prefix) {
-			if group.private == false || (group.private && (r.URL.Path == group.prefix)) {
-				//c.handlers = append(c.handlers, group.middlewares...)
-				for _, middle := range group.middlewares {
-					i := len(c.handlers)
-					c.handlers = (c.handlers)[:i+1]
-					(c.handlers)[i] = middle
+		if len(group.prefix) > 0 {
+			if strings.HasPrefix(r.URL.Path, group.prefix) {
+				if group.private == false || (group.private && (r.URL.Path == group.prefix)) {
+					//c.handlers = append(c.handlers, group.middlewares...)
+					for _, middle := range group.middlewares {
+						i := len(c.handlers)
+						c.handlers = (c.handlers)[:i+1]
+						(c.handlers)[i] = middle
+					}
+				}
+			} else {
+				fullpath := this.router.getRoute(r.Method, r.URL.Path, &c.Params, &c.lastHandler)
+				if group.private == false || (group.private && strings.HasPrefix(fullpath, group.prefix)) {
+					for _, middle := range group.middlewares {
+						i := len(c.handlers)
+						c.handlers = (c.handlers)[:i+1]
+						(c.handlers)[i] = middle
+					}
 				}
 			}
 		}

@@ -91,6 +91,7 @@ type node struct {
 	priority  uint32
 	children  []*node
 	handle    HandlerFunc
+	fullPath  string
 }
 
 func NewTree() *node {
@@ -131,6 +132,7 @@ func (n *node) Insert(path string, handle HandlerFunc) {
 		return
 	}
 
+	parentFullPathIndex := 0
 walk:
 	for {
 		// Find the longest common prefix.
@@ -148,6 +150,7 @@ walk:
 				children:  n.children,
 				handle:    n.handle,
 				priority:  n.priority - 1,
+				fullPath:  n.fullPath,
 			}
 
 			n.children = []*node{&child}
@@ -156,6 +159,7 @@ walk:
 			n.path = path[:i]
 			n.handle = nil
 			n.wildChild = false
+			n.fullPath = fullPath[:parentFullPathIndex+i]
 		}
 
 		// Make new node a child of this node
@@ -172,6 +176,7 @@ walk:
 					n.nType != catchAll &&
 					// Check for longer wildcard, e.g. :name and :names
 					(len(n.path) >= len(path) || path[len(n.path)] == '/') {
+					parentFullPathIndex += len(n.path)
 					continue walk
 				} else {
 					// Wildcard conflict
@@ -192,6 +197,7 @@ walk:
 
 			// '/' after param
 			if n.nType == param && idxc == '/' && len(n.children) == 1 {
+				parentFullPathIndex += len(n.path)
 				n = n.children[0]
 				n.priority++
 				continue walk
@@ -200,6 +206,7 @@ walk:
 			// Check if a child with the next path byte exists
 			for i, c := range []byte(n.indices) {
 				if c == idxc {
+					parentFullPathIndex += len(n.path)
 					i = n.incrementChildPrio(i)
 					n = n.children[i]
 					continue walk
@@ -210,7 +217,9 @@ walk:
 			if idxc != ':' && idxc != '*' {
 				// []byte for proper unicode char conversion, see #65
 				n.indices += string([]byte{idxc})
-				child := &node{}
+				child := &node{
+					fullPath: fullPath,
+				}
 				n.children = append(n.children, child)
 				n.incrementChildPrio(len(n.indices) - 1)
 				n = child
@@ -224,6 +233,7 @@ walk:
 			panic("a handle is already registered for path '" + fullPath + "'")
 		}
 		n.handle = handle
+		n.fullPath = fullPath
 		return
 	}
 }
@@ -264,8 +274,9 @@ func (n *node) insertChild(path, fullPath string, handle HandlerFunc) {
 
 			n.wildChild = true
 			child := &node{
-				nType: param,
-				path:  wildcard,
+				nType:    param,
+				path:     wildcard,
+				fullPath: fullPath,
 			}
 			n.children = []*node{child}
 			n = child
@@ -277,6 +288,7 @@ func (n *node) insertChild(path, fullPath string, handle HandlerFunc) {
 				path = path[len(wildcard):]
 				child := &node{
 					priority: 1,
+					fullPath: fullPath,
 				}
 				n.children = []*node{child}
 				n = child
@@ -309,6 +321,7 @@ func (n *node) insertChild(path, fullPath string, handle HandlerFunc) {
 		child := &node{
 			wildChild: true,
 			nType:     catchAll,
+			fullPath:  fullPath,
 		}
 		n.children = []*node{child}
 		n.indices = string('/')
@@ -321,6 +334,7 @@ func (n *node) insertChild(path, fullPath string, handle HandlerFunc) {
 			nType:    catchAll,
 			handle:   handle,
 			priority: 1,
+			fullPath: fullPath,
 		}
 		n.children = []*node{child}
 
@@ -330,16 +344,18 @@ func (n *node) insertChild(path, fullPath string, handle HandlerFunc) {
 	// If no wildcard was found, simply insert the path and handle
 	n.path = path
 	n.handle = handle
+	n.fullPath = fullPath
 }
 
 // Returns the value registered with the given path (key).
 // If no value can be found, a TSR (trailing slash redirect) recommendation is
 // made if a value exists with an extra (without the) trailing slash for the
 // given path.
-func (n *node) Search(path string, params *Params, handle *HandlerFunc) (tsr bool) {
+func (n *node) Search(path string, params *Params, handle *HandlerFunc) (fullPath string, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path
+		fullPath = n.fullPath
 		if len(path) > len(prefix) {
 			if path[:len(prefix)] == prefix {
 				path = path[len(prefix):]
