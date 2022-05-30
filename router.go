@@ -56,10 +56,11 @@ func (r *route) addRoute(method string, pattern string, handler HandlerFunc) {
 }
 
 // 获取路由，并且返回所有动态参数。
-func (r *route) getRoute(method string, path string, params *Params, handler *HandlerFunc) {
+func (r *route) getRoute(method string, path string, params *Params, handler *HandlerFunc) string {
 	index := r.getRootIndex(method)
 	// 将解析出来的路由参数赋值给了c.Params。这样就能够通过c.Param()访问到了
-	r.roots[index].Search(path, params, handler)
+	fullPath, _ := r.roots[index].Search(path, params, handler)
+	return fullPath
 }
 
 // 找到并执行处理请求函数
