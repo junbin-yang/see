@@ -112,7 +112,7 @@ func (this *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			fullpath := this.router.getRoute(r.Method, r.URL.Path, &c.Params, &c.lastHandler)
-			if group.private == false || (group.private && strings.HasPrefix(fullpath, group.prefix)) {
+			if strings.HasPrefix(fullpath, group.prefix) {
 				for _, middle := range group.middlewares {
 					i := len(c.handlers)
 					c.handlers = (c.handlers)[:i+1]
