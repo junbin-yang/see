@@ -568,33 +568,62 @@ func (c *Context) BindQuery(obj interface{}, validationfunc ...map[string]valida
 	return nil
 }
 
-func (c *Context) ShouldBindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
-	js, _ := json.ObjectToJson(c.initQuery())
-	t := reflect.TypeOf(obj).Elem()
+type BindingType struct {
+	Key   string
+	Value interface{}
+}
+
+func (c *Context) bindingStructure(t reflect.Type) []BindingType {
+	out := []BindingType{}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		key := field.Tag.Get("form")
-		if len(c.initQuery()[key]) > 0 {
+
+		if key == "" && field.Type.Kind() == reflect.Struct {
+			inherit := field.Type
+			item := c.bindingStructure(inherit)
+			out = append(out, item...)
+		} else if len(c.initQuery()[key]) > 0 {
 			var value interface{}
 			switch field.Type.Kind() {
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				value, _ = strconv.ParseInt(c.initQuery()[key][0], 10, 64)
+				out = append(out, BindingType{key, value})
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				value, _ = strconv.ParseInt(c.initQuery()[key][0], 10, 64)
 				value = math.Abs(float64(value.(int64)))
+				out = append(out, BindingType{key, value})
 			case reflect.Float32, reflect.Float64:
 				value, _ = strconv.ParseFloat(c.initQuery()[key][0], 64)
+				out = append(out, BindingType{key, value})
 			case reflect.Bool:
 				value = false
 				if c.initQuery()[key][0] == "true" {
 					value = true
 				}
+				out = append(out, BindingType{key, value})
+			case reflect.Struct:
+				inherit := field.Type
+				item := c.bindingStructure(inherit)
+				out = append(out, item...)
+
 			default:
 				value = c.initQuery()[key][0]
+				out = append(out, BindingType{key, value})
 			}
-			js, _ = sjson.Set(js, key, value)
 		}
 	}
+	return out
+}
+
+func (c *Context) ShouldBindQuery(obj interface{}, validationfunc ...map[string]validator.Func) error {
+	js, _ := json.ObjectToJson(c.initQuery())
+	t := reflect.TypeOf(obj).Elem()
+
+	for _, item := range c.bindingStructure(t) {
+		js, _ = sjson.Set(js, item.Key, item.Value)
+	}
+
 	json.JsonToObject(js, obj, "form")
 
 	return c.validate(obj, validationfunc...)
